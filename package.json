@@ -1,0 +1,46 @@
+{
+  "name": "uniapply-agent",
+  "version": "1.0.0",
+  "description": "AI-powered university application agent using Notion MCP — automates the full journey from exploration to admission",
+  "main": "dist/cli.js",
+  "bin": { "uniapply": "./dist/cli.js" },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "dev": "ts-node src/cli.ts",
+    "setup": "ts-node src/cli.ts setup",
+    "clip": "ts-node src/cli.ts clip",
+    "compare": "ts-node src/cli.ts compare",
+    "essay": "ts-node src/cli.ts essay",
+    "scan": "ts-node src/cli.ts scan",
+    "digest": "ts-node src/cli.ts digest",
+    "report": "ts-node src/cli.ts report",
+    "schedule": "ts-node src/cli.ts schedule",
+    "archive": "ts-node src/cli.ts archive",
+    "status": "ts-node src/cli.ts status"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "axios": "^1.7.2",
+    "chalk": "^4.1.2",
+    "cheerio": "^1.0.0-rc.12",
+    "commander": "^12.1.0",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "figlet": "^1.7.0",
+    "inquirer": "^8.2.6",
+    "node-cron": "^3.0.3",
+    "openai": "^4.52.0",
+    "ora": "^5.4.1",
+    "table": "^6.8.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.5.8",
+    "@types/inquirer": "^8.2.10",
+    "@types/node": "^20.14.2",
+    "@types/node-cron": "^3.0.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
