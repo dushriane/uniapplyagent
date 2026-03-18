@@ -239,7 +239,8 @@ export class ReportingAgent {
     if (safetyCount < 2) gaps.push(`Only ${safetyCount} safety school(s) — aim for at least 2.`);
     if (matchCount < 3) gaps.push(`Only ${matchCount} match school(s) — aim for at least 3.`);
     if (reachCount < 2) gaps.push(`Only ${reachCount} reach/dream school(s) — consider adding more.`);
-    const draftingEssays = essays.filter
+    //const draftingEssays = essays.filter
+    const draftingEssays = essays.filter((e) => e.status === 'Not Started').length
       ? (essays as { status: string }[]).filter((e) => e.status === 'Not Started').length
       : 0;
     if (draftingEssays > 3) gaps.push(`${draftingEssays} essays not yet started — begin brainstorming.`);
