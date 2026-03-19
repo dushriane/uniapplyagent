@@ -1,0 +1,28 @@
+{
+  "databaseIds": {
+    "universities": "328dd762-c7de-812d-95a7-f2ee616e4370",
+    "programs": "328dd762-c7de-8102-a7d0-ed55ad28532e",
+    "essays": "328dd762-c7de-81b8-8311-c67aa0200f3b",
+    "tasks": "328dd762-c7de-81cb-a945-d97f5ecf384e",
+    "interests": "328dd762-c7de-81a0-a7d6-c1b7de1e4697",
+    "activityLog": "328dd762-c7de-8130-80e8-c694013475fb",
+    "dashboardPageId": "328dd762-c7de-811d-a713-d2fe0efcc8f8"
+  },
+  "preferences": {
+    "locationPreferences": [
+      "germany",
+      "singapore",
+      "uk",
+      "china",
+      "uk",
+      "usa"
+    ],
+    "undecidedFriendly": true,
+    "strongAdvising": true,
+    "gpa": 3.2,
+    "targetApplicationCount": 5,
+    "schoolSizePreference": [
+      "Large (15k–30k)"
+    ]
+  }
+}
