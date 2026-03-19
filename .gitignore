@@ -14,3 +14,4 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+.uniapply-config.json
