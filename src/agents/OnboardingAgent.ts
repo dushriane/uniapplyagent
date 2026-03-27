@@ -128,6 +128,107 @@ export class OnboardingAgent {
       targetApplicationCount: prefs.targetApplicationCount as unknown as number,
     };
 
+    // ── Optional fields (Phase 3) ────────────────────────────────────────
+    console.log(chalk.bold('\n>> Optional Profile Fields\n') + chalk.gray('Expand your profile to get better recommendations. Skip any you\'d like:\n'));
+
+    const optionalPrefs = await inquirer.prompt<{
+      intendedMajors: string;
+      testOptional: boolean;
+      learningStyle: string;
+      financialAidNeed: number;
+      campusSetting: string;
+      preferredClimate: string;
+      advisingNeedLevel: string;
+      accessibilityNeeds: string;
+      communicationPreference: string;
+    }>([
+      {
+        type: 'input',
+        name: 'intendedMajors',
+        message: 'Intended majors (comma-separated, or leave blank):',
+        default: '',
+      },
+      {
+        type: 'confirm',
+        name: 'testOptional',
+        message: 'Are test-optional schools acceptable?',
+        default: true,
+      },
+      {
+        type: 'list',
+        name: 'campusSetting',
+        message: 'Preferred campus setting:',
+        choices: ['Urban', 'Suburban', 'Rural', '(skip)'],
+        default: 'Suburban',
+      },
+      {
+        type: 'list',
+        name: 'learningStyle',
+        message: 'Learning style preference:',
+        choices: ['Collaborative', 'Lecture-based', 'Hybrid', '(skip)'],
+        default: '(skip)',
+      },
+      {
+        type: 'number',
+        name: 'financialAidNeed',
+        message: 'Percentage of costs needing financial aid (0–100, or 0 to skip):',
+        default: 0,
+      },
+      {
+        type: 'input',
+        name: 'preferredClimate',
+        message: 'Preferred climate (e.g., "Temperate", "Warm", or leave blank):',
+        default: '',
+      },
+      {
+        type: 'list',
+        name: 'advisingNeedLevel',
+        message: 'How much advising support do you need?',
+        choices: ['Low', 'Medium', 'High', '(skip)'],
+        default: 'Medium',
+      },
+      {
+        type: 'input',
+        name: 'accessibilityNeeds',
+        message: 'Accessibility or support needs (or leave blank):',
+        default: '',
+      },
+      {
+        type: 'list',
+        name: 'communicationPreference',
+        message: 'How should schools contact you?',
+        choices: ['Email', 'SMS', 'Both', '(skip)'],
+        default: 'Email',
+      },
+    ]);
+
+    // Merge optional fields (skip noops)
+    if (optionalPrefs.intendedMajors.trim()) {
+      preferences.intendedMajors = optionalPrefs.intendedMajors.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    preferences.testOptional = optionalPrefs.testOptional;
+    if (optionalPrefs.campusSetting !== '(skip)') {
+      preferences.campusSetting = optionalPrefs.campusSetting as "Urban" | "Suburban" | "Rural";
+    }
+    if (optionalPrefs.learningStyle !== '(skip)') {
+      preferences.learningStyle = optionalPrefs.learningStyle;
+    }
+    if ((optionalPrefs.financialAidNeed as unknown as number) > 0) {
+      preferences.financialAidNeed = optionalPrefs.financialAidNeed as unknown as number;
+    }
+    if (optionalPrefs.preferredClimate.trim()) {
+      preferences.preferredClimate = optionalPrefs.preferredClimate;
+    }
+    if (optionalPrefs.advisingNeedLevel !== '(skip)') {
+      preferences.advisingNeedLevel = optionalPrefs.advisingNeedLevel as 'Low' | 'Medium' | 'High';
+    }
+    if (optionalPrefs.accessibilityNeeds.trim()) {
+      preferences.accessibilityNeeds = optionalPrefs.accessibilityNeeds;
+    }
+    if (optionalPrefs.communicationPreference !== '(skip)') {
+      preferences.communicationPreference = optionalPrefs.communicationPreference as 'Email' | 'SMS' | 'Both';
+    }
+
     savePreferences(preferences);
 
     // ── Step 4: Write Settings page ─────────────────────────────────────────

@@ -1,8 +1,18 @@
 # 🎓 UniApply Agent
 
 > AI-powered university application manager built on **Notion MCP** —
-> automates the full journey from early exploration to admission decisions,
+> now with **dual interfaces: CLI and Web UI**.
+> Automates the full journey from early exploration to admission decisions,
 > with special depth for undecided students.
+
+---
+
+## 🎯 What's New (Phase 2+)
+
+✨ **Web UI** — Beautiful React dashboard alongside the CLI  
+📱 **Balanced Intake** — Optional profile fields for better recommendations  
+🎨 **Dual Interfaces** — Choose CLI, API, or Web UI at startup  
+🔧 **Preference-Aware Scoring** — Fit scores now account for your learning style, campus setting, and more
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
 [![Notion MCP](https://img.shields.io/badge/Notion-MCP-black)](https://mcp.notion.com)
@@ -68,19 +78,41 @@ cp .env.example .env
 # Edit .env and add NOTION_TOKEN and optionally OPENAI_API_KEY
 ```
 
-### 3. First-Run Setup
+### 3. Choose Your Interface
 
 ```bash
-npm run setup
-# OR
-npx ts-node src/cli.ts setup
+npm run dev
+# OR: npx ts-node src/cli.ts
 ```
 
-This wizard will:
-- Ask for your Notion parent page ID (where to create databases)
-- Create all 6 databases automatically
-- Capture your preferences (size, location, budget, undecided-friendly flag)
-- Write a Settings page and Dashboard to Notion
+You'll be greeted with a menu:
+
+```
+? Choose your interface:
+  CLI (command-line)
+  API Server (for web UI)
+  Open Web UI (requires API server)
+```
+
+**Option A: CLI (recommended for power users)**
+```bash
+uniapply setup     # First-time setup
+uniapply clip <url>
+uniapply status
+```
+
+**Option B: Web UI (recommended for visual learners)**
+```bash
+npm run dev
+# → Select "Open Web UI" from the menu
+# → Browser opens to http://localhost:5173
+```
+
+**Option C: Headless API (for integrations)**
+```bash
+npm run api --port 8787
+# API listening on http://localhost:8787/health
+```
 
 ### 4. VS Code + Notion MCP
 
@@ -93,6 +125,27 @@ The `.vscode/mcp.json` connects GitHub Copilot to the Notion MCP server. After a
 "What are my top interest patterns?"
 "I submitted to Cornell — update Notion"
 ```
+
+---
+
+## 📋 Expanded Student Profile (Phase 3)
+
+During setup, you'll now be prompted for **optional profile fields** to improve recommendations:
+
+| Category | Fields | Example |
+|----------|--------|---------|
+| Academic | Intended Majors, Test Optional, Learning Style | "Computer Science, Interdisciplinary" |
+| Financial | Financial Aid Need (%) | "75% (need significant aid)" |
+| Lifestyle | Campus Setting, Preferred Climate, Distance From Home | "Suburban, Temperate, within 500mi" |
+| Support | Advising Need Level, Accessibility Needs | "High, wheelchair accessible" |
+| Communication | Communication Preference | "Email preferred, SMS OK" |
+
+**All fields are skippable** — leave blank to use defaults.
+
+These preferences are stored locally and mirrored to Notion, and they'll influence:
+- School fit scoring (prefer schools matching your advising needs, campus setting, etc.)
+- Upcoming filtering and recommendations
+- Reports and dashboards
 
 ---
 

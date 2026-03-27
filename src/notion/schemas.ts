@@ -248,6 +248,56 @@ export const INTERESTS_PROPERTIES = {
   'Date Added': { date: {} },
 } as const;
 
+// ── Student Profile (mirrored from local config) ─────────────────────────
+
+export const PROFILE_PROPERTIES = {
+  Title: { title: {} },  // Always "Student Profile"
+  'Location Preferences': { multi_select: { options: [] as { name: string; color: string }[] } },
+  'Max Tuition': { number: { format: 'dollar' as const } },
+  'School Size Preferences': { multi_select: { options: [] as { name: string; color: string }[] } },
+  'GPA': { number: { format: 'number' as const } },
+  'SAT Score': { number: { format: 'number' as const } },
+  'ACT Score': { number: { format: 'number' as const } },
+  'Target Application Count': { number: { format: 'number' as const } },
+  'Undecided Friendly': { checkbox: {} },
+  'Strong Advising': { checkbox: {} },
+  'Test Optional': { checkbox: {} },
+  'Intended Majors': { multi_select: { options: [] as { name: string; color: string }[] } },
+  'Learning Style': { rich_text: {} },
+  'Financial Aid Need %': { number: { format: 'percent' as const } },
+  'Campus Setting': {
+    select: {
+      options: [
+        { name: 'Urban', color: 'blue' },
+        { name: 'Suburban', color: 'yellow' },
+        { name: 'Rural', color: 'green' },
+      ],
+    },
+  },
+  'Preferred Climate': { rich_text: {} },
+  'Advising Need Level': {
+    select: {
+      options: [
+        { name: 'Low', color: 'green' },
+        { name: 'Medium', color: 'yellow' },
+        { name: 'High', color: 'red' },
+      ],
+    },
+  },
+  'Accessibility Needs': { rich_text: {} },
+  'Communication Preference': {
+    select: {
+      options: [
+        { name: 'Email', color: 'blue' },
+        { name: 'SMS', color: 'green' },
+        { name: 'Both', color: 'purple' },
+      ],
+    },
+  },
+  'Distance From Home (miles)': { number: { format: 'number' as const } },
+  'Last Updated': { date: {} },
+} as const;
+
 // ── Activity Log ──────────────────────────────────────────────────────────────
 
 export const ACTIVITY_LOG_PROPERTIES = {

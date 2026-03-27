@@ -82,6 +82,18 @@ export interface StudentPreferences {
   safetyCount?: number;
   matchCount?: number;
   reachCount?: number;
+
+  // ── Phase 3: Balanced optional intake fields (all skippable) ──────────
+  intendedMajors?: string[];             // e.g. ["Computer Science", "Philosophy"]
+  testOptional?: boolean;                // true if test-optional schools are acceptable
+  learningStyle?: string;                // e.g. "Collaborative", "Lecture-based"
+  financialAidNeed?: number;             // 0–100, percent of cost student needs covered
+  campusSetting?: 'Urban' | 'Suburban' | 'Rural';
+  preferredClimate?: string;             // e.g. "Temperate", "Warm"
+  distanceFromHome?: number;             // max miles acceptable
+  advisingNeedLevel?: 'Low' | 'Medium' | 'High';
+  accessibilityNeeds?: string;           // e.g. "Wheelchair accessible"
+  communicationPreference?: 'Email' | 'SMS' | 'Both';
 }
 
 export interface University {

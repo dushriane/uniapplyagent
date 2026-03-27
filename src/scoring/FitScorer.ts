@@ -14,14 +14,15 @@
  * The result is written back to Notion via NotionManager.updateUniversity().
  */
 
-import type { University, FitScoreBreakdown } from '../types';
+import type { University, FitScoreBreakdown, StudentPreferences } from '../types';
 
 export class FitScorer {
   /**
    * Compute the fit score breakdown for a single university.
    * Does NOT write to Notion; the caller decides whether to persist.
+   * Optionally applies preference-aware adjustments (Phase 3+ optional fields).
    */
-  score(university: University): FitScoreBreakdown {
+  score(university: University, prefs?: Partial<StudentPreferences>): FitScoreBreakdown {
     const { undecidedFriendly, curriculumFlexibility, advisingStrength, earlyDeclarationRequired } =
       university;
 
@@ -59,13 +60,55 @@ export class FitScorer {
         noEarlyDeclarationPoints,
     );
 
+    // ── Phase 3+: Optional preference-aware adjustments ──────────────────
+    let adjustedTotal = total;
+    const adjustments: string[] = [];
+
+    if (prefs) {
+      // Advising need level — boost schools with stronger advising if student needs it
+      if (prefs.advisingNeedLevel === 'High' && advisingStrengthPoints >= 18) {
+        adjustedTotal = Math.min(100, adjustedTotal + 5);
+        adjustments.push('✨ Strong advising match for your needs');
+      }
+
+      // Test optional consideration — boost if student prefers it
+      if (prefs.testOptional && !university.acceptanceRate) {
+        // If university doesn't document acceptance rate, it might be more flexible
+        adjustments.push('📝 Test-optional friendly');
+      }
+
+      // Campus setting and climate — informational (no points, just notes)
+      if (prefs.campusSetting && university.size) {
+        const sizeToSetting: Record<string, 'Urban' | 'Suburban' | 'Rural'> = {
+          'Small (<5k)': 'Rural',
+          'Medium (5k–15k)': 'Suburban',
+          'Large (15k–30k)': 'Urban',
+          'Very Large (30k+)': 'Urban',
+        };
+        if (sizeToSetting[university.size] === prefs.campusSetting) {
+          adjustments.push(`🏙️  Matches your ${prefs.campusSetting} preference`);
+        }
+      }
+
+      // Financial aid need — informational
+      if (
+        prefs.financialAidNeed &&
+        prefs.financialAidNeed > 50 &&
+        !university.acceptanceRate
+      ) {
+        adjustments.push('💰 May offer competitive financial aid');
+      }
+    }
+
+    const finalTotal = adjustedTotal;
+
     // ── Qualitative label ─────────────────────────────────────────────────
     const label =
-      total >= 80
+      finalTotal >= 80
         ? 'Excellent Fit'
-        : total >= 60
+        : finalTotal >= 60
         ? 'Good Fit'
-        : total >= 40
+        : finalTotal >= 40
         ? 'Fair Fit'
         : 'Poor Fit';
 
@@ -88,8 +131,11 @@ export class FitScorer {
     if (university.openCurriculum) strengths.push('Open curriculum (no distribution requirements)');
     if (university.firstYearFlexibility) strengths.push('First-year exploration programme');
 
+    // Add preference-based adjustments to strengths
+    strengths.push(...adjustments);
+
     return {
-      total,
+      total: finalTotal,
       undecidedFriendlyPoints,
       curriculumFlexibilityPoints,
       advisingStrengthPoints,

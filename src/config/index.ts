@@ -46,6 +46,10 @@ const DEFAULT_PREFERENCES: StudentPreferences = {
   safetyCount: 3,
   matchCount: 5,
   reachCount: 4,
+  testOptional: true,
+  campusSetting: 'Suburban',
+  advisingNeedLevel: 'Medium',
+  communicationPreference: 'Email',
 };
 
 export function loadConfig(): AgentConfig {
