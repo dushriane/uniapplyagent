@@ -61,9 +61,6 @@ InterestAnalyzer → field frequency × strength → program suggestions + cross
 ---
 
 ## 🚀 Quick Start
-
-### 1. Prerequisites
-
 - Node.js 18+
 - A [Notion integration token](https://www.notion.so/my-integrations) (share it with your workspace page)
 - Optional: OpenAI API key for AI-powered essay personalisation and comparisons
@@ -123,7 +120,6 @@ The `.vscode/mcp.json` connects GitHub Copilot to the Notion MCP server. After a
 "Show me all universities with Fit Score above 70"
 "Compare Brown and Bowdoin for an undecided student"
 "What are my top interest patterns?"
-"I submitted to Cornell — update Notion"
 ```
 
 ---
@@ -224,7 +220,6 @@ Run `uniapply status` to see all schools ranked by Fit Score.
 
 The `InterestAnalyzer` mines your Interests Log to find:
 
-1. **Top fields** by frequency × strength (e.g., "Psychology: 7 entries, avg 4.2/5")
 2. **Cross-field insights** (e.g., "Psychology + Sustainability → Conservation Psychology")
 3. **Program suggestions** mapped from 30+ academic fields
 4. **Emerging themes** across different interest types
@@ -292,10 +287,7 @@ All AI calls fall back gracefully to rule-based logic when no API key is configu
 
 ## 🛠️ Development
 
-```bash
-npm run build           # Compile TypeScript
-npm run dev             # Run CLI in dev mode (ts-node)
-npm run api             # Run API adapter in dev mode
+```bash`r`nnpm run build           # Compile TypeScript to dist/`r`nnpm run dev             # Run CLI in dev mode (ts-node)`r`nnpm run api             # Run API adapter in dev mode (localhost:8787)`r`nnpm run test            # Run all Node tests`r`nnpm run test:service    # Unit test profile mapping & Notion mirror logic`r`nnpm run test:smoke      # CLI smoke tests (verify critical commands work)
 ```
 
 ### Adding a New Feature
@@ -311,3 +303,4 @@ npm run api             # Run API adapter in dev mode
 ## 📄 License
 
 MIT — built for the Notion MCP challenge.
+

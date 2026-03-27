@@ -14,6 +14,11 @@ import chalk from 'chalk';
 import { NotionManager } from '../notion/manager';
 import { savePreferences } from '../config';
 import type { StudentPreferences } from '../types';
+import {
+  mapProfileInputs,
+  buildSettingsMirrorContent,
+  type OptionalProfileInput,
+} from '../services/profileService';
 
 export class OnboardingAgent {
   constructor(private readonly notion: NotionManager) {}
@@ -113,35 +118,10 @@ export class OnboardingAgent {
       },
     ]);
 
-    const preferences: Partial<StudentPreferences> = {
-      locationPreferences: prefs.locationRaw
-        ? prefs.locationRaw.split(',').map((s: string) => s.trim()).filter(Boolean)
-        : [],
-      maxTuition: (prefs.maxTuition as unknown as number) > 0 ? (prefs.maxTuition as unknown as number) : undefined,
-      schoolSizePreference: (prefs.sizeRaw as unknown as string[]).length
-        ? (prefs.sizeRaw as unknown as string[]) as StudentPreferences['schoolSizePreference']
-        : undefined,
-      undecidedFriendly: prefs.undecidedFriendly,
-      strongAdvising: prefs.strongAdvising,
-      gpa: (prefs.gpa as unknown as number) > 0 ? (prefs.gpa as unknown as number) : undefined,
-      satScore: (prefs.satScore as unknown as number) > 0 ? (prefs.satScore as unknown as number) : undefined,
-      targetApplicationCount: prefs.targetApplicationCount as unknown as number,
-    };
-
     // ── Optional fields (Phase 3) ────────────────────────────────────────
     console.log(chalk.bold('\n>> Optional Profile Fields\n') + chalk.gray('Expand your profile to get better recommendations. Skip any you\'d like:\n'));
 
-    const optionalPrefs = await inquirer.prompt<{
-      intendedMajors: string;
-      testOptional: boolean;
-      learningStyle: string;
-      financialAidNeed: number;
-      campusSetting: string;
-      preferredClimate: string;
-      advisingNeedLevel: string;
-      accessibilityNeeds: string;
-      communicationPreference: string;
-    }>([
+    const optionalPrefs = await inquirer.prompt<OptionalProfileInput>([
       {
         type: 'input',
         name: 'intendedMajors',
@@ -202,32 +182,19 @@ export class OnboardingAgent {
       },
     ]);
 
-    // Merge optional fields (skip noops)
-    if (optionalPrefs.intendedMajors.trim()) {
-      preferences.intendedMajors = optionalPrefs.intendedMajors.split(',').map((s: string) => s.trim()).filter(Boolean);
-    }
-    preferences.testOptional = optionalPrefs.testOptional;
-    if (optionalPrefs.campusSetting !== '(skip)') {
-      preferences.campusSetting = optionalPrefs.campusSetting as "Urban" | "Suburban" | "Rural";
-    }
-    if (optionalPrefs.learningStyle !== '(skip)') {
-      preferences.learningStyle = optionalPrefs.learningStyle;
-    }
-    if ((optionalPrefs.financialAidNeed as unknown as number) > 0) {
-      preferences.financialAidNeed = optionalPrefs.financialAidNeed as unknown as number;
-    }
-    if (optionalPrefs.preferredClimate.trim()) {
-      preferences.preferredClimate = optionalPrefs.preferredClimate;
-    }
-    if (optionalPrefs.advisingNeedLevel !== '(skip)') {
-      preferences.advisingNeedLevel = optionalPrefs.advisingNeedLevel as 'Low' | 'Medium' | 'High';
-    }
-    if (optionalPrefs.accessibilityNeeds.trim()) {
-      preferences.accessibilityNeeds = optionalPrefs.accessibilityNeeds;
-    }
-    if (optionalPrefs.communicationPreference !== '(skip)') {
-      preferences.communicationPreference = optionalPrefs.communicationPreference as 'Email' | 'SMS' | 'Both';
-    }
+    const preferences = mapProfileInputs(
+      {
+        locationRaw: prefs.locationRaw,
+        maxTuition: prefs.maxTuition as unknown as number,
+        sizeRaw: prefs.sizeRaw as unknown as string[],
+        undecidedFriendly: prefs.undecidedFriendly,
+        strongAdvising: prefs.strongAdvising,
+        gpa: prefs.gpa as unknown as number,
+        satScore: prefs.satScore as unknown as number,
+        targetApplicationCount: prefs.targetApplicationCount as unknown as number,
+      },
+      optionalPrefs,
+    );
 
     savePreferences(preferences);
 
@@ -259,27 +226,7 @@ export class OnboardingAgent {
     parentId: string,
     prefs: StudentPreferences,
   ): Promise<void> {
-    const content = [
-      '# ⚙️  UniApply Agent — Settings',
-      '',
-      '## Safety Toggles',
-      '| Toggle | Current Value | Description |',
-      '|--------|--------------|-------------|',
-      '| READ_ONLY | false | When true, agent never writes to Notion |',
-      '| NO_AUTO_SEND | true | When true, email drafts shown but never sent |',
-      '',
-      '## Student Preferences',
-      `- Undecided Friendly: ${prefs.undecidedFriendly}`,
-      `- Strong Advising: ${prefs.strongAdvising}`,
-      `- Target Applications: ${prefs.targetApplicationCount ?? 12}`,
-      `- Location: ${prefs.locationPreferences?.join(', ') || 'Any'}`,
-      `- Max Tuition: ${prefs.maxTuition ? '$' + prefs.maxTuition.toLocaleString() : 'None'}`,
-      '',
-      '## Access & Audit',
-      'All agent actions are logged in the 🔍 Activity Log database.',
-      'Review it any time to see exactly what the agent read or wrote.',
-    ].join('\n');
-
+    const content = buildSettingsMirrorContent(prefs);
     await this.notion.appendToPage(parentId, content);
   }
 }
