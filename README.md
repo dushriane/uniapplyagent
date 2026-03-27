@@ -115,6 +115,37 @@ uniapply post-submit <school>          # Log interview/decision/visit events
 uniapply rec                           # Track recommendation request
 uniapply archive <school>              # Archive a completed application
 uniapply schedule                      # Start background scheduler
+uniapply api --port 8787              # Start HTTP API adapter for web UI
+```
+
+### API Adapter (for Web UI)
+
+Start the API server from the same orchestrator used by the CLI:
+
+```bash
+npm run api
+# or choose a custom port
+npx ts-node src/cli.ts api --port 9000
+```
+
+Health endpoint:
+
+```bash
+curl http://localhost:8787/health
+```
+
+All API routes return normalized JSON:
+
+```json
+{
+	"ok": true,
+	"data": {},
+	"meta": {
+		"adapter": "api",
+		"action": "POST /api/clip",
+		"timestamp": "2026-03-27T10:00:00.000Z"
+	}
+}
 ```
 
 ---
@@ -211,6 +242,7 @@ All AI calls fall back gracefully to rule-based logic when no API key is configu
 ```bash
 npm run build           # Compile TypeScript
 npm run dev             # Run CLI in dev mode (ts-node)
+npm run api             # Run API adapter in dev mode
 ```
 
 ### Adding a New Feature

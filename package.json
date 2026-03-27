@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/cli.js",
     "dev": "ts-node src/cli.ts",
+    "api": "ts-node src/cli.ts api",
     "setup": "ts-node src/cli.ts setup",
     "clip": "ts-node src/cli.ts clip",
     "compare": "ts-node src/cli.ts compare",
@@ -17,7 +18,8 @@
     "report": "ts-node src/cli.ts report",
     "schedule": "ts-node src/cli.ts schedule",
     "archive": "ts-node src/cli.ts archive",
-    "status": "ts-node src/cli.ts status"
+    "status": "ts-node src/cli.ts status",
+    "start:api": "node dist/cli.js api"
   },
   "dependencies": {
     "@notionhq/client": "^2.2.15",

@@ -27,6 +27,8 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
 import { UniApplyAgent } from './UniApplyAgent';
+import { createApiServer } from './server/apiServer';
+import { runAdapterAction } from './adapters/response';
 import type { University } from './types';
 
 // ── Banner ────────────────────────────────────────────────────────────────────
@@ -42,6 +44,19 @@ let _agent: UniApplyAgent | null = null;
 function getAgent(): UniApplyAgent {
   if (!_agent) _agent = new UniApplyAgent();
   return _agent;
+}
+
+async function runCliAction<T>(action: string, operation: () => Promise<T>): Promise<T> {
+  const result = await runAdapterAction('cli', action, operation);
+  if (!result.ok) {
+    console.error(chalk.red(`[${result.error.code}] ${result.error.message}`));
+    if (process.env.DEBUG_UNIAPPLY === 'true' && result.error.details !== undefined) {
+      console.error(chalk.gray(JSON.stringify(result.error.details, null, 2)));
+    }
+    process.exit(1);
+  }
+
+  return result.data;
 }
 
 // ── CLI ───────────────────────────────────────────────────────────────────────
@@ -60,12 +75,7 @@ program
   .command('setup')
   .description('First-time workspace setup: creates all Notion databases and captures preferences')
   .action(async () => {
-    try {
-      await getAgent().setup();
-    } catch (err: unknown) {
-      console.error(chalk.red('Setup failed: ' + (err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('setup', () => getAgent().setup());
   });
 
 // ── status ────────────────────────────────────────────────────────────────────
@@ -74,12 +84,7 @@ program
   .command('status')
   .description('Show dashboard: top schools, essay completion, overdue tasks')
   .action(async () => {
-    try {
-      await getAgent().showStatus();
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('status', () => getAgent().showStatus());
   });
 
 // ── clip ──────────────────────────────────────────────────────────────────────
@@ -89,12 +94,7 @@ program
   .description('Clip a university webpage into Notion with auto-scored Fit for Undecided')
   .argument('<url>', 'Full URL of the university or program page to clip')
   .action(async (url: string) => {
-    try {
-      await getAgent().clipUrl(url);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('clip', () => getAgent().clipUrl(url));
   });
 
 // ── compare ───────────────────────────────────────────────────────────────────
@@ -105,12 +105,7 @@ program
   .argument('<schoolA>', 'Name (or partial name) of the first school')
   .argument('<schoolB>', 'Name (or partial name) of the second school')
   .action(async (schoolA: string, schoolB: string) => {
-    try {
-      await getAgent().compareSchools(schoolA, schoolB);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('compare', () => getAgent().compareSchools(schoolA, schoolB));
   });
 
 // ── essay ─────────────────────────────────────────────────────────────────────
@@ -135,12 +130,7 @@ program
       ]);
       draft = text;
     }
-    try {
-      await getAgent().personalizeEssay(draft, school);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('essay', () => getAgent().personalizeEssay(draft, school));
   });
 
 // ── scan ──────────────────────────────────────────────────────────────────────
@@ -150,12 +140,7 @@ program
   .description('Deadline scan: flags urgent items and re-prioritises tasks')
   .option('--no-interactive', 'Skip interactive follow-up prompts')
   .action(async (opts: { interactive: boolean }) => {
-    try {
-      await getAgent().scanDeadlines(opts.interactive !== false);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('scan', () => getAgent().scanDeadlines(opts.interactive !== false));
   });
 
 // ── checklist ─────────────────────────────────────────────────────────────────
@@ -167,12 +152,7 @@ program
   .option('-d, --deadline <date>', 'Application deadline (YYYY-MM-DD)')
   .action(async (school: string, opts: { deadline?: string }) => {
     const deadline = opts.deadline ? new Date(opts.deadline) : undefined;
-    try {
-      await getAgent().createChecklist(school, deadline);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('checklist', () => getAgent().createChecklist(school, deadline));
   });
 
 // ── digest ────────────────────────────────────────────────────────────────────
@@ -181,12 +161,7 @@ program
   .command('digest')
   .description('Generate the weekly Exploration Digest Notion page')
   .action(async () => {
-    try {
-      await getAgent().generateDigest();
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('digest', () => getAgent().generateDigest());
   });
 
 // ── report ────────────────────────────────────────────────────────────────────
@@ -195,12 +170,7 @@ program
   .command('report')
   .description('Generate Application Health Report (Notion page + CLI)')
   .action(async () => {
-    try {
-      await getAgent().generateHealthReport();
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('report', () => getAgent().generateHealthReport());
   });
 
 // ── interests ─────────────────────────────────────────────────────────────────
@@ -209,12 +179,7 @@ program
   .command('interests')
   .description('Analyse interest patterns and surface program suggestions')
   .action(async () => {
-    try {
-      await getAgent().analyzeInterests();
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('interests', () => getAgent().analyzeInterests());
   });
 
 // ── interest add ──────────────────────────────────────────────────────────────
@@ -255,19 +220,14 @@ program
       { type: 'input', name: 'url', message: 'Source URL (optional):', default: '' },
     ]);
 
-    try {
-      await getAgent().logInterest(
-        answers.title,
-        answers.field,
-        answers.source,
-        answers.strength as 1 | 2 | 3 | 4 | 5,
-        answers.notes || undefined,
-        answers.url || undefined,
-      );
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('interest-log', () => getAgent().logInterest(
+      answers.title,
+      answers.field,
+      answers.source,
+      answers.strength as 1 | 2 | 3 | 4 | 5,
+      answers.notes || undefined,
+      answers.url || undefined,
+    ));
   });
 
 // ── confirm ───────────────────────────────────────────────────────────────────
@@ -288,12 +248,7 @@ program
       console.error(chalk.red(`Invalid status. Choose from: ${validStatuses.join(', ')}`));
       process.exit(1);
     }
-    try {
-      await getAgent().processConfirmation(school, status as University['status']);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('confirm', () => getAgent().processConfirmation(school, status as University['status']));
   });
 
 // ── post-submit ───────────────────────────────────────────────────────────────
@@ -319,12 +274,7 @@ program
         ],
       },
     ]);
-    try {
-      await getAgent().logPostSubmission(school, eventType);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('post-submit', () => getAgent().logPostSubmission(school, eventType));
   });
 
 // ── archive ───────────────────────────────────────────────────────────────────
@@ -343,12 +293,7 @@ program
       },
     ]);
     if (!confirmed) { console.log(chalk.gray('Cancelled.')); return; }
-    try {
-      await getAgent().archiveUniversity(school);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('archive', () => getAgent().archiveUniversity(school));
   });
 
 // ── schedule ──────────────────────────────────────────────────────────────────
@@ -360,6 +305,31 @@ program
     getAgent().startScheduler();
     console.log(chalk.gray('\nScheduler running. Press Ctrl+C to stop.\n'));
     // Keep process alive
+    process.stdin.resume();
+  });
+
+// ── api server ───────────────────────────────────────────────────────────────
+
+program
+  .command('api')
+  .description('Start HTTP API adapter for UI integrations')
+  .option('-p, --port <port>', 'Port number', '8787')
+  .action(async (opts: { port: string }) => {
+    const port = Number(opts.port);
+    if (!Number.isInteger(port) || port <= 0) {
+      console.error(chalk.red('Invalid port. Please pass a positive integer, e.g. --port 8787'));
+      process.exit(1);
+    }
+
+    await runCliAction('api-start', async () => {
+      const api = createApiServer(getAgent());
+      await api.start(port);
+      return { port };
+    });
+
+    console.log(chalk.green(`API server running at http://localhost:${port}`));
+    console.log(chalk.gray('Health check: GET /health'));
+    console.log(chalk.gray('Press Ctrl+C to stop.\n'));
     process.stdin.resume();
   });
 
@@ -381,12 +351,12 @@ program
       { type: 'input', name: 'emailUrl', message: 'Email thread URL (optional):', default: '' },
     ]);
     const deadline = answers.deadline ? new Date(answers.deadline) : undefined;
-    try {
-      await getAgent().trackRecommendation(answers.school, answers.recommender, deadline, answers.emailUrl || undefined);
-    } catch (err: unknown) {
-      console.error(chalk.red((err as Error).message));
-      process.exit(1);
-    }
+    await runCliAction('recommendation-track', () => getAgent().trackRecommendation(
+      answers.school,
+      answers.recommender,
+      deadline,
+      answers.emailUrl || undefined,
+    ));
   });
 
 // ── Type export for inline use ─────────────────────────────────────────────────
