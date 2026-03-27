@@ -308,30 +308,7 @@ program
     process.stdin.resume();
   });
 
-// ── api server ───────────────────────────────────────────────────────────────
 
-program
-  .command('api')
-  .description('Start HTTP API adapter for UI integrations')
-  .option('-p, --port <port>', 'Port number', '8787')
-  .action(async (opts: { port: string }) => {
-    const port = Number(opts.port);
-    if (!Number.isInteger(port) || port <= 0) {
-      console.error(chalk.red('Invalid port. Please pass a positive integer, e.g. --port 8787'));
-      process.exit(1);
-    }
-
-    await runCliAction('api-start', async () => {
-      const api = createApiServer(getAgent());
-      await api.start(port);
-      return { port };
-    });
-
-    console.log(chalk.green(`API server running at http://localhost:${port}`));
-    console.log(chalk.gray('Health check: GET /health'));
-    console.log(chalk.gray('Press Ctrl+C to stop.\n'));
-    process.stdin.resume();
-  });
 
 // ── recommendation ────────────────────────────────────────────────────────────
 
@@ -362,78 +339,3 @@ program
 // ── Type export for inline use ─────────────────────────────────────────────────
 type Interest = import('./types').Interest;
 
-// ── Parse ──────────────────────────────────────────────────────────────────────
-
-// Interactive mode selection if no args
-if (process.argv.length === 2) {
-  (async () => {
-    const { mode } = await inquirer.prompt<{ mode: 'cli' | 'api' | 'ui' }>([
-      {
-        type: 'list',
-        name: 'mode',
-        message: 'Choose your interface:',
-        choices: [
-          { name: 'CLI (command-line)', value: 'cli' },
-          { name: 'API Server (for web UI)', value: 'api' },
-          { name: 'Open Web UI (requires API server)', value: 'ui' },
-        ],
-        default: 'cli',
-      },
-    ]);
-
-    if (mode === 'cli') {
-      program.parseAsync(process.argv).catch((err: Error) => {
-        console.error(chalk.red('\nUnhandled error: ' + err.message));
-        process.exit(1);
-      });
-    } else if (mode === 'api') {
-      // Run API server
-      await runCliAction('api-start', async () => {
-        const api = createApiServer(getAgent());
-        await api.start(8787);
-        return { port: 8787 };
-      });
-
-      console.log(chalk.green(`API server running at http://localhost:8787`));
-      console.log(chalk.gray('Health check: GET /health'));
-      console.log(chalk.gray('Press Ctrl+C to stop.\n'));
-      process.stdin.resume();
-    } else if (mode === 'ui') {
-      console.log(chalk.cyan('\n🌐  Opening UniApply Web UI...\n'));
-      console.log(chalk.gray('Starting API server on port 8787...'));
-
-      const api = createApiServer(getAgent());
-      await api.start(8787);
-
-      console.log(chalk.green('✅ API server ready'));
-      console.log(chalk.gray('Opening UI at http://localhost:5173...\n'));
-
-      // Try to open browser
-      try {
-        const os = await import('os');
-        const { execSync } = await import('child_process');
-
-        const platform = os.platform();
-        const url = 'http://localhost:5173';
-
-        if (platform === 'win32') {
-          execSync(`start ${url}`, { stdio: 'ignore' });
-        } else if (platform === 'darwin') {
-          execSync(`open ${url}`, { stdio: 'ignore' });
-        } else {
-          execSync(`xdg-open ${url}`, { stdio: 'ignore' });
-        }
-      } catch {
-        console.log(chalk.yellow('Note: Could not auto-open browser. Visit http://localhost:5173'));
-      }
-
-      console.log(chalk.gray('Press Ctrl+C to stop.\n'));
-      process.stdin.resume();
-    }
-  })();
-} else {
-  program.parseAsync(process.argv).catch((err: Error) => {
-    console.error(chalk.red('\nUnhandled error: ' + err.message));
-    process.exit(1);
-  });
-}
